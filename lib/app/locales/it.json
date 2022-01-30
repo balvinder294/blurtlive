@@ -268,7 +268,7 @@
         "select_cover_image": "Seleziona un'immagine di copertina"
     },
     "category_selector_jsx": {
-        "tag_your_story": "Tag (massimo 5). Il primo tag è la categoria principale. ",
+        "tag_your_story": "Tag (massimo 10). Il primo tag è la categoria principale. ",
         "select_a_tag": "Seleziona un tag",
         "maximum_tag_length_is_24_characters": "La lunghezza massima di un tag è 24 caratteri",
         "use_limited_amount_of_categories": "Utilizzare solo %(amount)s categorie",

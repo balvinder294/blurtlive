@@ -273,7 +273,7 @@
         "select_cover_image": "Выберите изображение обложки"
     },
     "category_selector_jsx": {
-        "tag_your_story": "Добавь теги (до 5 штук), первый тег станет основной категорией.",
+        "tag_your_story": "Добавь теги (до 10 штук), первый тег станет основной категорией.",
         "select_a_tag": "Выбрать тег",
         "maximum_tag_length_is_24_characters": "Максимальная длина категории 24 знака",
         "use_limited_amount_of_categories": "Пожалуйста, используйте только %(amount)s категории",

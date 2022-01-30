@@ -1,8 +1,8 @@
 {
   "javascript": {
-    "app": "/assets/app.5c4086c4ba86248453f0.js",
-    "vendor": "/assets/vendor.5c4086c4ba86248453f0.js",
-    "vendors~IntlBundle": "/assets/2.5c4086c4ba86248453f0.js"
+    "app": "/assets/app.176e8e399b2036724df7.js",
+    "vendor": "/assets/vendor.176e8e399b2036724df7.js",
+    "vendors~IntlBundle": "/assets/2.176e8e399b2036724df7.js"
   },
   "styles": {
     "app": "/assets/app.css"
