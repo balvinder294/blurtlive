@@ -1,3 +1,10 @@
+/* eslint-disable react/button-has-type */
+/* eslint-disable react/jsx-props-no-spreading */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable no-restricted-globals */
+/* eslint-disable react/destructuring-assignment */
+/* eslint-disable react/require-default-props */
+/* eslint-disable react/static-property-placement */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/anchor-is-valid */
 /* eslint-disable jsx-a11y/tabindex-no-positive */
@@ -45,6 +52,7 @@ class ReplyEditor extends React.Component {
         permlink: PropTypes.string, // new or existing category (default calculated from title)
         parent_author: PropTypes.string, // empty or string for top-level post
         parent_permlink: PropTypes.string, // new or existing category
+        // eslint-disable-next-line react/forbid-prop-types
         jsonMetadata: PropTypes.object, // An existing comment has its own meta data
         category: PropTypes.string, // initial value
         title: PropTypes.string, // initial value
@@ -56,6 +64,7 @@ class ReplyEditor extends React.Component {
     };
 
     static defaultProps = {
+        // eslint-disable-next-line react/default-props-match-prop-types
         isStory: false,
         author: '',
         parent_author: '',
@@ -74,9 +83,8 @@ class ReplyEditor extends React.Component {
 
         if (process.env.BROWSER) {
             // Check for rte editor preference
-            let rte =
-                this.props.isStory &&
-                JSON.parse(
+            let rte = this.props.isStory
+                && JSON.parse(
                     localStorage.getItem('replyEditorData-rte') || RTE_DEFAULT
                 );
             let raw = null;
@@ -95,10 +103,8 @@ class ReplyEditor extends React.Component {
                 if (category) category.props.onChange(draft.category);
                 if (title) title.props.onChange(draft.title);
                 if (summary) summary.props.onChange(draft.summary);
-                if (draft.payoutType)
-                    this.props.setPayoutType(formId, draft.payoutType);
-                if (draft.beneficiaries)
-                    this.props.setBeneficiaries(formId, draft.beneficiaries);
+                if (draft.payoutType) this.props.setPayoutType(formId, draft.payoutType);
+                if (draft.beneficiaries) this.props.setBeneficiaries(formId, draft.beneficiaries);
                 raw = draft.body;
             }
 
@@ -137,16 +143,18 @@ class ReplyEditor extends React.Component {
 
             // Save curent draft to localStorage
             if (
-                ts.body.value !== ns.body.value ||
-                (ns.summary && ts.summary.value !== ns.summary.value) ||
-                (ns.category && ts.category.value !== ns.category.value) ||
-                (ns.title && ts.title.value !== ns.title.value) ||
-                np.payoutType !== tp.payoutType ||
-                np.beneficiaries !== tp.beneficiaries
+                ts.body.value !== ns.body.value
+                || (ns.summary && ts.summary.value !== ns.summary.value)
+                || (ns.category && ts.category.value !== ns.category.value)
+                || (ns.title && ts.title.value !== ns.title.value)
+                || np.payoutType !== tp.payoutType
+                || np.beneficiaries !== tp.beneficiaries
             ) {
                 // also prevents saving after parent deletes this information
                 const { formId, payoutType, beneficiaries } = np;
-                const { category, title, body, summary } = ns;
+                const {
+                    category, title, body, summary
+                } = ns;
                 const data = {
                     formId,
                     title: title ? title.value : undefined,
@@ -174,8 +182,7 @@ class ReplyEditor extends React.Component {
         const { isStory, type, fields } = props;
         const isEdit = type === 'edit';
         const maxKb = isStory ? 65 : 16;
-        const markdownRegex =
-            /(?:\*[\w\s]*\*|#[\w\s]*#|_[\w\s]*_|~[\w\s]*~|]\s*\(|]\s*\[)/;
+        const markdownRegex = /(?:\*[\w\s]*\*|#[\w\s]*#|_[\w\s]*_|~[\w\s]*~|]\s*\(|]\s*\[)/;
         const htmlTagRegex = /<\/?[\w\s="/.':;#-/?]+>/gi;
         reactForm({
             fields,
@@ -184,38 +191,37 @@ class ReplyEditor extends React.Component {
             initialValues: props.initialValues,
             validation: (values) => ({
                 title:
-                    isStory &&
-                    (!values.title || values.title.trim() === ''
+                    isStory
+                    && (!values.title || values.title.trim() === ''
                         ? tt('g.required')
                         : values.title.length > 255
-                        ? tt('reply_editor.shorten_title')
-                        : null),
+                            ? tt('reply_editor.shorten_title')
+                            : null),
                 category: isStory && validateCategory(values.category, !isEdit),
                 body: !values.body
                     ? tt('g.required')
                     : values.body.length > maxKb * 1024
-                    ? tt('reply_editor.exceeds_maximum_length', { maxKb })
-                    : null,
+                        ? tt('reply_editor.exceeds_maximum_length', { maxKb })
+                        : null,
                 summary:
-                    isStory &&
-                    (values.summary.length > 140
+                    isStory
+                    && (values.summary.length > 140
                         ? tt('reply_editor.shorten_summary')
                         : markdownRegex.test(values.summary)
-                        ? tt('reply_editor.markdown_not_supported')
-                        : htmlTagRegex.test(values.summary)
-                        ? tt('reply_editor.html_not_supported')
-                        : null),
+                            ? tt('reply_editor.markdown_not_supported')
+                            : htmlTagRegex.test(values.summary)
+                                ? tt('reply_editor.html_not_supported')
+                                : null),
             }),
         });
     }
 
     onTitleChange = (e) => {
-        const value = e.target.value;
+        const { value } = e.target;
         // TODO block links in title (they do not make good permlinks)
-        const hasMarkdown =
-            /(?:\*[\w\s]*\*|\#[\w\s]*\#|_[\w\s]*_|~[\w\s]*~|\]\s*\(|\]\s*\[)/.test(
-                value
-            );
+        const hasMarkdown = /(?:\*[\w\s]*\*|\#[\w\s]*\#|_[\w\s]*_|~[\w\s]*~|\]\s*\(|\]\s*\[)/.test(
+            value
+        );
         this.setState({
             titleWarn: hasMarkdown
                 ? tt('reply_editor.markdown_not_supported')
@@ -226,12 +232,11 @@ class ReplyEditor extends React.Component {
     };
 
     onSummaryChange = (e) => {
-        const value = e.target.value;
+        const { value } = e.target;
         // TODO block links in title (they do not make good permlinks)
-        const hasMarkdown =
-            /(?:\*[\w\s]*\*|\#[\w\s]*\#|_[\w\s]*_|~[\w\s]*~|\]\s*\(|\]\s*\[)/.test(
-                value
-            );
+        const hasMarkdown = /(?:\*[\w\s]*\*|\#[\w\s]*\#|_[\w\s]*_|~[\w\s]*~|\]\s*\(|\]\s*\[)/.test(
+            value
+        );
         this.setState({
             summaryWarn: hasMarkdown
                 ? tt('reply_editor.markdown_not_supported')
@@ -246,8 +251,9 @@ class ReplyEditor extends React.Component {
         const { formId, onCancel, defaultPayoutType } = this.props;
         const { replyForm, body } = this.state;
         if (
-            !body.value ||
-            confirm(tt('reply_editor.are_you_sure_you_want_to_clear_this_form'))
+            !body.value
+            // eslint-disable-next-line no-alert
+            || confirm(tt('reply_editor.are_you_sure_you_want_to_clear_this_form'))
         ) {
             replyForm.resetForm();
             this.setState({
@@ -286,6 +292,7 @@ class ReplyEditor extends React.Component {
             // this.refs = React.createRef();
             const { draft } = this.refs;
             draft.className = 'ReplyEditor__draft';
+            // eslint-disable-next-line no-void
             void draft.offsetWidth; // reset animation
             draft.className = 'ReplyEditor__draft ReplyEditor__draft-saved';
         } catch (err) {
@@ -298,6 +305,7 @@ class ReplyEditor extends React.Component {
         this.props.setPayoutType(this.props.formId, this.props.payoutType);
         this.props.showAdvancedSettings(this.props.formId);
     };
+
     displayErrorMessage = (message) => {
         this.setState({
             progress: { error: message },
@@ -344,7 +352,7 @@ class ReplyEditor extends React.Component {
     onPasteCapture = (e) => {
         try {
             if (e.clipboardData) {
-                for (const item of e.clipboardData.items) {
+                e.clipboardData.items.forEach(item => {
                     if (item.kind === 'file' && /^image\//.test(item.type)) {
                         const blob = item.getAsFile();
                         imagesToUpload.push({
@@ -352,7 +360,7 @@ class ReplyEditor extends React.Component {
                             temporaryTag: '',
                         });
                     }
-                }
+                });
                 this.insertPlaceHolders();
                 this.uploadNextImage();
             } else {
@@ -364,12 +372,14 @@ class ReplyEditor extends React.Component {
             console.error('Error analyzing clipboard event', error);
         }
     };
+
     uploadNextImage = () => {
         if (imagesToUpload.length > 0) {
             const nextImage = imagesToUpload.pop();
             this.upload(nextImage);
         }
     };
+
     insertPlaceHolders = () => {
         let { imagesUploadCount } = this.state;
         const { body } = this.state;
@@ -389,9 +399,9 @@ class ReplyEditor extends React.Component {
 
         // Insert the temporary tag where the cursor currently is
         body.props.onChange(
-            body.value.substring(0, selectionStart) +
-                placeholder +
-                body.value.substring(selectionStart, body.value.length)
+            body.value.substring(0, selectionStart)
+            + placeholder
+            + body.value.substring(selectionStart, body.value.length)
         );
     };
 
@@ -401,27 +411,25 @@ class ReplyEditor extends React.Component {
             progress: { message: tt('reply_editor.uploading') },
         });
         uploadImage(image.file, (progress) => {
+            const { body } = this.state;
             if (progress.url) {
                 this.setState({ progress: {} });
                 const { url } = progress;
                 const imageMd = `![${image.file.name}](${url})`;
-                const { body } = this.state;
                 const { selectionStart, selectionEnd } = this.refs.postRef;
                 body.props.onChange(
                     body.value.replace(image.temporaryTag, imageMd)
                 );
                 this.uploadNextImage();
+            } else if (progress.hasOwnProperty('error')) {
+                this.displayErrorMessage(progress.error);
+                const imageMd = `![${image.file.name}](UPLOAD FAILED)`;
+                // Remove temporary image MD tag
+                body.props.onChange(
+                    body.value.replace(image.temporaryTag, imageMd)
+                );
             } else {
-                if (progress.hasOwnProperty('error')) {
-                    this.displayErrorMessage(progress.error);
-                    const imageMd = `![${image.file.name}](UPLOAD FAILED)`;
-                    // Remove temporary image MD tag
-                    body.props.onChange(
-                        body.value.replace(image.temporaryTag, imageMd)
-                    );
-                } else {
-                    this.setState({ progress });
-                }
+                this.setState({ progress });
             }
         });
     };
@@ -455,7 +463,9 @@ class ReplyEditor extends React.Component {
             beneficiaries,
         } = this.props;
         const { submitting, valid, handleSubmit } = this.state.replyForm;
-        const { postError, titleWarn, rte, summaryWarn } = this.state;
+        const {
+            postError, titleWarn, rte, summaryWarn
+        } = this.state;
         const { progress, noClipboardData } = this.state;
         const disabled = submitting || !valid;
         const loading = submitting || this.state.loading;
@@ -511,13 +521,14 @@ class ReplyEditor extends React.Component {
         let titleError = null;
         // The Required title error (triggered onBlur) can shift the form making it hard to click on things..
         if (
-            (hasTitleError &&
-                (title.error !== tt('g.required') || body.value !== '')) ||
-            titleWarn
+            (hasTitleError
+                && (title.error !== tt('g.required') || body.value !== ''))
+            || titleWarn
         ) {
             titleError = (
                 <div className={hasTitleError ? 'error' : 'warning'}>
-                    {hasTitleError ? title.error : titleWarn}&nbsp;
+                    {hasTitleError ? title.error : titleWarn}
+                    &nbsp;
                 </div>
             );
         }
@@ -526,13 +537,14 @@ class ReplyEditor extends React.Component {
         let summaryError = null;
         // The Required title error (triggered onBlur) can shift the form making it hard to click on things..
         if (
-            (hasSummaryError &&
-                (summary.error !== tt('g.required') || body.value !== '')) ||
-            summaryWarn
+            (hasSummaryError
+                && (summary.error !== tt('g.required') || body.value !== ''))
+            || summaryWarn
         ) {
             summaryError = (
                 <div className={hasSummaryError ? 'error' : 'warning'}>
-                    {hasSummaryError ? summary.error : summaryWarn}&nbsp;
+                    {hasSummaryError ? summary.error : summaryWarn}
+                    &nbsp;
                 </div>
             );
         }
@@ -550,6 +562,7 @@ class ReplyEditor extends React.Component {
         if (jsonMetadata && jsonMetadata.image) {
             const jsonMetadataImages = jsonMetadata.image;
             if (jsonMetadataImages && jsonMetadataImages.length > 0) {
+                // eslint-disable-next-line prefer-destructuring
                 selectedCoverImage = jsonMetadataImages[0];
             }
         }
@@ -594,11 +607,10 @@ class ReplyEditor extends React.Component {
                     <form
                         className={vframe_class}
                         onSubmit={handleSubmit(({ data }) => {
-                            const startLoadingIndicator = () =>
-                                this.setState({
-                                    loading: true,
-                                    postError: undefined,
-                                });
+                            const startLoadingIndicator = () => this.setState({
+                                loading: true,
+                                postError: undefined,
+                            });
                             reply({
                                 ...data,
                                 ...replyParams,
@@ -622,6 +634,7 @@ class ReplyEditor extends React.Component {
                                         autoComplete="off"
                                         ref="titleRef"
                                         tabIndex={1}
+                                        // eslint-disable-next-line react/jsx-props-no-spreading
                                         {...title.props}
                                     />
                                     <div
@@ -654,8 +667,8 @@ class ReplyEditor extends React.Component {
 
                         <div
                             className={
-                                'ReplyEditor__body ' +
-                                (rte
+                                'ReplyEditor__body '
+                                + (rte
                                     ? `rte ${vframe_section_class}`
                                     : vframe_section_shrink_class)
                             }
@@ -712,9 +725,10 @@ class ReplyEditor extends React.Component {
                                         {noClipboardData
                                             ? ''
                                             : tt(
-                                                  'reply_editor.pasting_from_the_clipboard'
-                                              )}
-                                        {tt('reply_editor.or_by')}{' '}
+                                                'reply_editor.pasting_from_the_clipboard'
+                                            )}
+                                        {tt('reply_editor.or_by')}
+                                        {' '}
                                         <a onClick={this.onOpenClick}>
                                             {tt('reply_editor.selecting_them')}
                                         </a>
@@ -727,7 +741,10 @@ class ReplyEditor extends React.Component {
                                     )}
                                     {progress.error && (
                                         <div className="error">
-                                            {tt('reply_editor.image_upload')} :{' '}
+                                            {tt('reply_editor.image_upload')}
+                                            {' '}
+                                            :
+                                            {' '}
                                             {progress.error}
                                         </div>
                                     )}
@@ -736,10 +753,10 @@ class ReplyEditor extends React.Component {
                         </div>
                         <div className={vframe_section_shrink_class}>
                             <div className="error">
-                                {body.touched &&
-                                    body.error &&
-                                    body.error !== 'Required' &&
-                                    body.error}
+                                {body.touched
+                                    && body.error
+                                    && body.error !== 'Required'
+                                    && body.error}
                             </div>
                         </div>
 
@@ -780,8 +797,8 @@ class ReplyEditor extends React.Component {
                                         trending={tags}
                                     />
                                     <div className="error">
-                                        {(category.touched || category.value) &&
-                                            category.error}
+                                        {(category.touched || category.value)
+                                            && category.error}
                                         &nbsp;
                                     </div>
                                 </span>
@@ -810,8 +827,8 @@ class ReplyEditor extends React.Component {
                                                                 'ReplyEditor__options__image_selector__image_container',
                                                                 {
                                                                     selected:
-                                                                        image ===
-                                                                        selectedCoverImage,
+                                                                        image
+                                                                        === selectedCoverImage,
                                                                 }
                                                             )}
                                                             style={{
@@ -839,20 +856,20 @@ class ReplyEditor extends React.Component {
                                         <div>
                                             {tt('g.rewards')}
                                             {': '}
-                                            {this.props.payoutType == '0%' &&
-                                                tt(
+                                            {this.props.payoutType == '0%'
+                                                && tt(
                                                     'reply_editor.decline_payout'
                                                 )}
-                                            {this.props.payoutType == '100%' &&
-                                                tt('reply_editor.power_up_100')}
-                                            {this.props.payoutType == '75%' &&
-                                                tt(
+                                            {this.props.payoutType == '100%'
+                                                && tt('reply_editor.power_up_100')}
+                                            {this.props.payoutType == '75%'
+                                                && tt(
                                                     'reply_editor.power_up_25_75'
                                                 )}
                                         </div>
                                         <div>
-                                            {beneficiaries &&
-                                                beneficiaries.length > 0 && (
+                                            {beneficiaries
+                                                && beneficiaries.length > 0 && (
                                                     <span>
                                                         {tt('g.beneficiaries')}
                                                         {': '}
@@ -872,7 +889,8 @@ class ReplyEditor extends React.Component {
                                             {tt(
                                                 'reply_editor.advanced_settings'
                                             )}
-                                        </a>{' '}
+                                        </a>
+                                        {' '}
                                         <br />
                                         &nbsp;
                                     </div>
@@ -903,7 +921,8 @@ class ReplyEditor extends React.Component {
                                     <LoadingIndicator type="circle" />
                                 </span>
                             )}
-                            &nbsp;{' '}
+                            &nbsp;
+                            {' '}
                             {!loading && this.props.onCancel && (
                                 <button
                                     type="button"
@@ -924,14 +943,14 @@ class ReplyEditor extends React.Component {
                                     {tt('g.clear')}
                                 </button>
                             )}
-                            {!isStory &&
-                                !isEdit &&
-                                this.props.payoutType != '100%' && (
+                            {!isStory
+                                && !isEdit
+                                && this.props.payoutType != '100%' && (
                                     <div className="ReplyEditor__options float-right text-right">
                                         {tt('g.rewards')}
                                         {': '}
-                                        {this.props.payoutType == '0%' &&
-                                            tt('reply_editor.decline_payout')}
+                                        {this.props.payoutType == '0%'
+                                            && tt('reply_editor.decline_payout')}
                                         {'. '}
                                         <a href={'/@' + username + '/settings'}>
                                             Update settings
@@ -1015,395 +1034,398 @@ const richTextEditor = process.env.BROWSER
     ? require('react-rte-image').default
     : null;
 
-export default (formId) =>
-    connect(
-        // mapStateToProps
-        (state, ownProps) => {
-            const username = state.user.getIn(['current', 'username']);
-            const tags = [];
-            const fields = ['body'];
-            const { type, parent_author, jsonMetadata } = ownProps;
-            const isEdit = type === 'edit';
-            const isStory =
-                /submit_story/.test(type) || (isEdit && parent_author === '');
-            if (isStory) {
-                fields.push('title');
-                fields.push('category');
-                fields.push('summary');
-            }
+export default (formId) => connect(
+    // mapStateToProps
+    (state, ownProps) => {
+        const username = state.user.getIn(['current', 'username']);
+        const tags = [];
+        const fields = ['body'];
+        const { type, parent_author, jsonMetadata } = ownProps;
+        const isEdit = type === 'edit';
+        const isStory = /submit_story/.test(type) || (isEdit && parent_author === '');
+        if (isStory) {
+            fields.push('title');
+            fields.push('category');
+            fields.push('summary');
+        }
 
-            const { summary } = ownProps;
-            let { category, title, body } = ownProps;
-            if (/submit_/.test(type)) {
-                title = '';
-                body = '';
-            }
-            if (isStory && jsonMetadata && jsonMetadata.tags) {
-                category = Set([category, ...jsonMetadata.tags]).join(' ');
-            }
+        const { summary } = ownProps;
+        let { category, title, body } = ownProps;
+        if (/submit_/.test(type)) {
+            title = '';
+            body = '';
+        }
+        if (isStory && jsonMetadata && jsonMetadata.tags) {
+            category = Set([category, ...jsonMetadata.tags]).join(' ');
+        }
 
-            const defaultPayoutType = state.app.getIn(
-                [
-                    'user_preferences',
-                    isStory ? 'defaultBlogPayout' : 'defaultCommentPayout',
-                ],
-                '75%'
-            );
-            let payoutType = state.user.getIn([
-                'current',
-                'post',
-                formId,
-                'payoutType',
-            ]);
-            if (!payoutType) {
-                payoutType = defaultPayoutType;
-            }
-            let beneficiaries = state.user.getIn([
-                'current',
-                'post',
-                formId,
-                'beneficiaries',
-            ]);
-            beneficiaries = beneficiaries ? beneficiaries.toJS() : [];
+        const defaultPayoutType = state.app.getIn(
+            [
+                'user_preferences',
+                isStory ? 'defaultBlogPayout' : 'defaultCommentPayout',
+            ],
+            '75%'
+        );
+        let payoutType = state.user.getIn([
+            'current',
+            'post',
+            formId,
+            'payoutType',
+        ]);
+        if (!payoutType) {
+            payoutType = defaultPayoutType;
+        }
+        let beneficiaries = state.user.getIn([
+            'current',
+            'post',
+            formId,
+            'beneficiaries',
+        ]);
+        beneficiaries = beneficiaries ? beneficiaries.toJS() : [];
 
-            const ret = {
-                ...ownProps,
-                fields,
-                isStory,
-                username,
-                defaultPayoutType,
-                payoutType,
-                initialValues: {
-                    title,
-                    body,
-                    category,
-                    summary,
-                },
-                state,
-                formId,
-                richTextEditor,
-                beneficiaries,
-                tags,
-            };
-            return ret;
-        },
-
-        // mapDispatchToProps
-        (dispatch) => ({
-            uploadImage: (file, progress) =>
-                dispatch(userActions.uploadImage({ file, progress })),
-            showAdvancedSettings: (formId) =>
-                dispatch(userActions.showPostAdvancedSettings({ formId })),
-            setPayoutType: (formId, payoutType) =>
-                dispatch(
-                    userActions.set({
-                        key: ['current', 'post', formId, 'payoutType'],
-                        value: payoutType,
-                    })
-                ),
-            setBeneficiaries: (formId, beneficiaries) =>
-                dispatch(
-                    userActions.set({
-                        key: ['current', 'post', formId, 'beneficiaries'],
-                        value: fromJS(beneficiaries),
-                    })
-                ),
-            reply: ({
-                category,
+        const ret = {
+            ...ownProps,
+            fields,
+            isStory,
+            username,
+            defaultPayoutType,
+            payoutType,
+            initialValues: {
                 title,
-                summary,
                 body,
-                author,
-                permlink,
-                parent_author,
-                parent_permlink,
-                isHtml,
-                isStory,
-                type,
-                originalPost,
-                payoutType,
-                state,
-                jsonMetadata,
-                beneficiaries = [],
-                successCallback,
-                errorCallback,
-                startLoadingIndicator,
-                selectedCoverImage,
-            }) => {
-                // const post = state.global.getIn(['content', author + '/' + permlink])
-                const username = state.user.getIn(['current', 'username']);
+                category,
+                summary,
+            },
+            state,
+            formId,
+            richTextEditor,
+            beneficiaries,
+            tags,
+        };
+        return ret;
+    },
 
-                const isEdit = type === 'edit';
-                const isNew = /^submit_/.test(type);
+    // mapDispatchToProps
+    (dispatch) => ({
+        uploadImage: (file, progress) => dispatch(userActions.uploadImage({ file, progress })),
+        showAdvancedSettings: (formId) => dispatch(userActions.showPostAdvancedSettings({ formId })),
+        setPayoutType: (formId, payoutType) => dispatch(
+            userActions.set({
+                key: ['current', 'post', formId, 'payoutType'],
+                value: payoutType,
+            })
+        ),
+        setBeneficiaries: (formId, beneficiaries) => dispatch(
+            userActions.set({
+                key: ['current', 'post', formId, 'beneficiaries'],
+                value: fromJS(beneficiaries),
+            })
+        ),
+        reply: ({
+            category,
+            title,
+            summary,
+            body,
+            author,
+            permlink,
+            parent_author,
+            parent_permlink,
+            isHtml,
+            isStory,
+            type,
+            originalPost,
+            payoutType,
+            state,
+            jsonMetadata,
+            beneficiaries = [],
+            successCallback,
+            errorCallback,
+            startLoadingIndicator,
+            selectedCoverImage,
+        }) => {
+            // const post = state.global.getIn(['content', author + '/' + permlink])
+            const username = state.user.getIn(['current', 'username']);
 
-                // Wire up the current and parent props for either an Edit or a Submit (new post)
-                //'submit_story', 'submit_comment', 'edit'
-                const linkProps = isNew
+            const isEdit = type === 'edit';
+            const isNew = /^submit_/.test(type);
+
+            // Wire up the current and parent props for either an Edit or a Submit (new post)
+            //'submit_story', 'submit_comment', 'edit'
+            const linkProps = isNew
+                ? {
+                    // submit new
+                    parent_author: author,
+                    parent_permlink: permlink,
+                    author: username,
+                    // permlink,  assigned in TransactionSaga
+                }
+                : // edit existing
+                isEdit
                     ? {
-                          // submit new
-                          parent_author: author,
-                          parent_permlink: permlink,
-                          author: username,
-                          // permlink,  assigned in TransactionSaga
-                      }
-                    : // edit existing
-                    isEdit
-                    ? { author, permlink, parent_author, parent_permlink }
+                        author, permlink, parent_author, parent_permlink
+                    }
                     : null;
 
-                if (!linkProps) throw new Error('Unknown type: ' + type);
+            if (!linkProps) throw new Error('Unknown type: ' + type);
 
-                // If this is an HTML post, it MUST begin and end with the tag
-                if (isHtml && !body.match(/^<html>[\s\S]*<\/html>$/)) {
-                    errorCallback(
-                        'HTML posts must begin with <html> and end with </html>'
-                    );
-                    return;
-                }
-
-                let rtags;
-                {
-                    const html = isHtml ? body : remarkable.render(body);
-                    rtags = HtmlReady(html, { mutate: false });
-                }
-
-                allowedTags.forEach((tag) => {
-                    rtags.htmltags.delete(tag);
-                });
-                if (isHtml) rtags.htmltags.delete('html'); // html tag allowed only in HTML mode
-                if (rtags.htmltags.size) {
-                    errorCallback(
-                        'Please remove the following HTML elements from your post: ' +
-                            Array(...rtags.htmltags)
-                                .map((tag) => `<${tag}>`)
-                                .join(', ')
-                    );
-                    return;
-                }
-
-                const formCategories = Set(
-                    category
-                        ? category.trim().replace(/#/g, '').split(/ +/)
-                        : []
+            // If this is an HTML post, it MUST begin and end with the tag
+            if (isHtml && !body.match(/^<html>[\s\S]*<\/html>$/)) {
+                errorCallback(
+                    'HTML posts must begin with <html> and end with </html>'
                 );
-                const rootCategory =
-                    originalPost && originalPost.category
-                        ? originalPost.category
-                        : formCategories.first();
-                let allCategories = Set([...formCategories.toJS()]);
-                if (/^[-a-z\d]+$/.test(rootCategory))
-                    allCategories = allCategories.add(rootCategory);
+                return;
+            }
 
-                const postHashtags = [...rtags.hashtags];
-                while (allCategories.size < 10 && postHashtags.length > 0) {
-                    allCategories = allCategories.add(postHashtags.shift());
+            if(!isEdit) {
+                const message = `
+
+                        ---
+                    
+                        <sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/${permlink})</sub>
+                    `;
+                if(!isHtml) {
+                    body+= ` ` + message;
+                } else if(isHtml) {
+                    let htmlFromBody = body;
+                    if (htmlFromBody) htmlFromBody = stripHtmlWrapper(htmlFromBody);
+                    if (htmlFromBody && htmlFromBody.trim() == '') htmlFromBody = null;
+                    if(this.props.RichTextEditor && htmlFromBody != null) {
+                        body = this.props.RichTextEditor.createValueFromString(htmlFromBody, 'html');
+                        body+= message;
+                        isHtml = false;
+                    }
                 }
+            }
 
-                // merge
-                const meta = isEdit ? jsonMetadata : {};
-                if (allCategories.size) meta.tags = allCategories.toJS();
-                else delete meta.tags;
-                if (rtags.usertags.size)
-                    meta.users = Array.from(rtags.usertags);
-                else delete meta.users;
-                if (rtags.images.size) {
-                    const moveToFirst = (array, first) => {
-                        array.sort((x, y) => {
-                            return x === first ? -1 : y === first ? 1 : 0;
-                        });
+            let rtags;
+            {
+                const html = isHtml ? body : remarkable.render(body);
+                rtags = HtmlReady(html, { mutate: false });
+            }
+
+            allowedTags.forEach((tag) => {
+                rtags.htmltags.delete(tag);
+            });
+            if (isHtml) rtags.htmltags.delete('html'); // html tag allowed only in HTML mode
+            if (rtags.htmltags.size) {
+                errorCallback(
+                    'Please remove the following HTML elements from your post: '
+                    + Array(...rtags.htmltags)
+                        .map((tag) => `<${tag}>`)
+                        .join(', ')
+                );
+                return;
+            }
+
+            const formCategories = Set(
+                category
+                    ? category.trim().replace(/#/g, '').split(/ +/)
+                    : []
+            );
+            const rootCategory = originalPost && originalPost.category
+                ? originalPost.category
+                : formCategories.first();
+            let allCategories = Set([...formCategories.toJS()]);
+            if (/^[-a-z\d]+$/.test(rootCategory)) allCategories = allCategories.add(rootCategory);
+
+            const postHashtags = [...rtags.hashtags];
+            while (allCategories.size < 10 && postHashtags.length > 0) {
+                allCategories = allCategories.add(postHashtags.shift());
+            }
+
+            // merge
+            const meta = isEdit ? jsonMetadata : {};
+            if (allCategories.size) meta.tags = allCategories.toJS();
+            else delete meta.tags;
+            if (rtags.usertags.size) meta.users = Array.from(rtags.usertags);
+            else delete meta.users;
+            if (rtags.images.size) {
+                const moveToFirst = (array, first) => {
+                    array.sort((x, y) => {
+                        return x === first ? -1 : y === first ? 1 : 0;
+                    });
+                };
+                meta.image = Array.from(rtags.images);
+
+                // If a cover image has been manually selected,
+                // move it to the first element of the image array.
+                if (selectedCoverImage) {
+                    moveToFirst(meta.image, selectedCoverImage);
+                }
+            } else delete meta.image;
+            if (rtags.links.size) meta.links = Array.from(rtags.links);
+            else delete meta.links;
+
+            meta.app = 'blurtlatam/0.1';
+            if (isStory) {
+                meta.format = isHtml ? 'html' : 'markdown';
+                if (summary) {
+                    meta.description = summary;
+                }
+            }
+
+            // if(Object.keys(json_metadata.steem).length === 0) json_metadata = {}// keep json_metadata minimal
+            const sanitizeErrors = [];
+            sanitize(body, sanitizeConfig({ sanitizeErrors }));
+            if (sanitizeErrors.length) {
+                errorCallback(sanitizeErrors.join('.  '));
+                return;
+            }
+
+            if (meta.tags.length > 10) {
+                const includingCategory = isEdit
+                    ? tt('reply_editor.including_the_category', {
+                        rootCategory,
+                    })
+                    : '';
+                errorCallback(
+                    tt('reply_editor.use_limited_amount_of_tags', {
+                        tagsLength: meta.tags.length,
+                        includingCategory,
+                    })
+                );
+                return;
+            }
+
+            startLoadingIndicator();
+
+            const originalBody = isEdit ? originalPost.body : null;
+            const __config = { originalBody };
+            console.log('config', __config);
+            // Avoid changing payout option during edits #735
+            if (!isEdit && isStory) {
+                if (!__config.comment_options) {
+                    __config.comment_options = {
+                        author: username,
+                        permlink,
                     };
-                    meta.image = Array.from(rtags.images);
-
-                    // If a cover image has been manually selected,
-                    // move it to the first element of the image array.
-                    if (selectedCoverImage) {
-                        moveToFirst(meta.image, selectedCoverImage);
-                    }
-                } else delete meta.image;
-                if (rtags.links.size) meta.links = Array.from(rtags.links);
-                else delete meta.links;
-
-                meta.app = 'blurt/0.1';
-                if (isStory) {
-                    meta.format = isHtml ? 'html' : 'markdown';
-                    if (summary) {
-                        meta.description = summary;
-                    }
                 }
-
-                // if(Object.keys(json_metadata.steem).length === 0) json_metadata = {}// keep json_metadata minimal
-                const sanitizeErrors = [];
-                sanitize(body, sanitizeConfig({ sanitizeErrors }));
-                if (sanitizeErrors.length) {
-                    errorCallback(sanitizeErrors.join('.  '));
-                    return;
+                if (!__config.comment_options.extensions) {
+                    __config.comment_options.extensions = [];
                 }
-
-                if (meta.tags.length > 10) {
-                    const includingCategory = isEdit
-                        ? tt('reply_editor.including_the_category', {
-                              rootCategory,
-                          })
-                        : '';
-                    errorCallback(
-                        tt('reply_editor.use_limited_amount_of_tags', {
-                            tagsLength: meta.tags.length,
-                            includingCategory,
-                        })
-                    );
-                    return;
-                }
-
-                startLoadingIndicator();
-
-                const originalBody = isEdit ? originalPost.body : null;
-                const __config = { originalBody };
-                console.log('config', __config);
-                // Avoid changing payout option during edits #735
-                if (!isEdit && isStory) {
-                    if (!__config.comment_options) {
+                switch (payoutType) {
+                    case '0%': // decline payout
                         __config.comment_options = {
-                            author: username,
-                            permlink,
+                            max_accepted_payout: '0.000 BLURT',
                         };
-                    }
+                        break;
+                    case '100%':
+                        __config.comment_options.extensions.push([
+                            1,
+                            {
+                                percent_blurt: 0,
+                            },
+                        ]);
+                        break;
+                    case '75%': // default
+                        break;
+                    default: // dd//
+                }
+                if (beneficiaries && beneficiaries.length > 0) {
                     if (!__config.comment_options.extensions) {
                         __config.comment_options.extensions = [];
                     }
-                    switch (payoutType) {
-                        case '0%': // decline payout
-                            __config.comment_options = {
-                                max_accepted_payout: '0.000 BLURT',
-                            };
-                            break;
-                        case '100%':
-                            __config.comment_options.extensions.push([
-                                1,
-                                {
-                                    percent_blurt: 0,
-                                },
-                            ]);
-                            break;
-                        case '75%': // default
-                            // __config.comment_options.extensions.push(
-                            //     [
-                            //         1,
-                            //         {
-                            //             percent_blurt: 10000
-                            //         }
-                            //     ]
-                            // );
-                            break;
-                        default: // dd//
-                    }
-                    if (beneficiaries && beneficiaries.length > 0) {
-                        if (!__config.comment_options.extensions) {
-                            __config.comment_options.extensions = [];
-                        }
 
-                        const beneficiariesList = [
+                    const beneficiariesList = [
+                        0,
+                        {
+                            beneficiaries: beneficiaries
+                                .sort((a, b) => a.username < b.username
+                                    ? -1
+                                    : a.username > b.username
+                                        ? 1
+                                        : 0)
+                                .map((elt) => ({
+                                    account: elt.username,
+                                    weight: parseInt(elt.percent) * 100,
+                                })),
+                        },
+                    ];
+
+                    __config.comment_options.extensions.splice(
+                        0,
+                        0,
+                        beneficiariesList
+                    );
+                    __config.comment_options.extensions.join();
+                } else {
+                    if (!__config.comment_options) {
+                        __config.comment_options = {};
+                    }
+                    const account = state.global.getIn([
+                        'accounts',
+                        username,
+                    ]);
+                    let referrer = '';
+                    if (
+                        account.get('json_metadata') !== undefined
+                        && account.get('json_metadata') !== ''
+                    ) {
+                        const accountCreatedDaysAgo = (new Date().getTime()
+                            - new Date(
+                                `${account.get('created')}Z`
+                            ).getTime())
+                            / 1000
+                            / 60
+                            / 60
+                            / 24;
+                        if (accountCreatedDaysAgo < 30) {
+                            referrer = JSON.parse(
+                                account.get('json_metadata')
+                            ).referral;
+                        }
+                    }
+                    if (referrer) {
+                        __config.comment_options.extensions.push([
                             0,
                             {
-                                beneficiaries: beneficiaries
-                                    .sort((a, b) =>
-                                        a.username < b.username
-                                            ? -1
-                                            : a.username > b.username
-                                            ? 1
-                                            : 0
-                                    )
-                                    .map((elt) => ({
-                                        account: elt.username,
-                                        weight: parseInt(elt.percent) * 100,
-                                    })),
+                                beneficiaries: [
+                                    {
+                                        account: referrer,
+                                        weight: 300,
+                                    },
+                                ],
                             },
-                        ];
-
-                        __config.comment_options.extensions.splice(
-                            0,
-                            0,
-                            beneficiariesList
-                        );
-                        __config.comment_options.extensions.join();
-                    } else {
-                        if (!__config.comment_options) {
-                            __config.comment_options = {};
-                        }
-                        const account = state.global.getIn([
-                            'accounts',
-                            username,
                         ]);
-                        let referrer = '';
-                        if (
-                            account.get('json_metadata') !== undefined &&
-                            account.get('json_metadata') !== ''
-                        ) {
-                            const accountCreatedDaysAgo =
-                                (new Date().getTime() -
-                                    new Date(
-                                        `${account.get('created')}Z`
-                                    ).getTime()) /
-                                1000 /
-                                60 /
-                                60 /
-                                24;
-                            if (accountCreatedDaysAgo < 30) {
-                                referrer = JSON.parse(
-                                    account.get('json_metadata')
-                                ).referral;
-                            }
-                        }
-                        if (referrer) {
-                            __config.comment_options.extensions.push([
-                                0,
-                                {
-                                    beneficiaries: [
-                                        {
-                                            account: referrer,
-                                            weight: 300,
-                                        },
-                                    ],
-                                },
-                            ]);
-                        }
                     }
                 }
+            }
 
-                const operation = {
-                    ...linkProps,
-                    category: rootCategory,
-                    title,
-                    body,
-                    json_metadata: meta,
-                    __config,
-                };
-                const operationFlatFee = state.global.getIn([
-                    'props',
-                    'operation_flat_fee',
-                ]);
-                const bandwidthKbytesFee = state.global.getIn([
-                    'props',
-                    'bandwidth_kbytes_fee',
-                ]);
-                const size = JSON.stringify(operation).replace(
-                    /[\[\]\,\"]/g,
-                    ''
-                ).length;
-                const bw_fee = Math.max(
-                    0.001,
-                    ((size / 1024) * bandwidthKbytesFee).toFixed(3)
-                );
-                const fee = (operationFlatFee + bw_fee).toFixed(3);
+            const operation = {
+                ...linkProps,
+                category: rootCategory,
+                title,
+                body,
+                json_metadata: meta,
+                __config,
+            };
+            const operationFlatFee = state.global.getIn([
+                'props',
+                'operation_flat_fee',
+            ]);
+            const bandwidthKbytesFee = state.global.getIn([
+                'props',
+                'bandwidth_kbytes_fee',
+            ]);
+            const size = JSON.stringify(operation).replace(
+                /[\[\]\,\"]/g,
+                ''
+            ).length;
+            const bw_fee = Math.max(
+                0.001,
+                ((size / 1024) * bandwidthKbytesFee).toFixed(3)
+            );
+            const fee = (operationFlatFee + bw_fee).toFixed(3);
 
-                dispatch(
-                    transactionActions.broadcastOperation({
-                        type: 'comment',
-                        confirm: tt('g.operation_cost', { fee }),
-                        operation,
-                        errorCallback,
-                        successCallback,
-                    })
-                );
-            },
-        })
-    )(ReplyEditor);
+            dispatch(
+                transactionActions.broadcastOperation({
+                    type: 'comment',
+                    confirm: tt('g.operation_cost', { fee }),
+                    operation,
+                    errorCallback,
+                    successCallback,
+                })
+            );
+        },
+    })
+)(ReplyEditor);
