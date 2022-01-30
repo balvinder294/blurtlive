@@ -16,24 +16,13 @@ Release/
 
 # Clion
 .idea
-cmake-build-debug
-cmake-build-release
-
-# CMake files
-cmake_install.cmake
-CMakeCache.txt
-CMakeFiles
-CMakeDoxyfile.in
-CMakeDoxygenDefaults.cmake
-CMakeScripts/
-_builds
 
 # Unix Makefiles
 Makefile
 
 # Misc files
-\#*\#
-*~
+# \#*\#
+# *~
 compile_commands.json
 lcov
 doxygen
@@ -41,7 +30,6 @@ doxygen
 
 # Build directories
 build/
-
 
 # Condenser things
 .DS_Store
@@ -55,9 +43,6 @@ vendor/*
 tmp/*
 .vagrant
 lib
-
-
-node_modules/.yarn-integrity
 
 # m3 local files
 .chicken

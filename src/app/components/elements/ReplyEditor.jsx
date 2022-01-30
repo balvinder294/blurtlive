@@ -1177,12 +1177,12 @@ export default (formId) => connect(
             }
 
             if(!isEdit) {
-                const message = `
+                // const message = `
 
-                        ---
-                    
-                        <sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/${permlink})</sub>
-                    `;
+                //         ---
+                //         <sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/${permlink})</sub>
+                //     `;
+                const message = "---- <center><sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/" + permlink + ")</sub></center>";
                 if(!isHtml) {
                     body+= ` ` + message;
                 } else if(isHtml) {
