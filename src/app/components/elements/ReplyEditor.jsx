@@ -1182,7 +1182,7 @@ export default (formId) => connect(
                 //         ---
                 //         <sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/${permlink})</sub>
                 //     `;
-                const message = "---- <center><sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/" + parent_permlink + "/" + author + "/" + permlink + ")</sub></center>";
+                const message = "<br /> <hr /> <center><sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/" + parent_permlink + "/" + author + "/" + permlink + ")</sub></center>";
                 if(!isHtml) {
                     body+= ` ` + message;
                 } else if(isHtml) {
