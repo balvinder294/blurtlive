@@ -1,19 +1,19 @@
+/* eslint-disable no-fallthrough */
 import '@babel/register';
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import 'whatwg-fetch';
 import store from 'store';
-import { VIEW_MODE_WHISTLE, PARAM_VIEW_MODE } from 'shared/constants';
 import './assets/stylesheets/app.scss';
 import plugins from 'app/utils/JsPlugins';
 import Iso from 'iso';
 import { clientRender } from 'shared/UniversalRender';
-import ConsoleExports from './utils/ConsoleExports';
 import { serverApiRecordEvent } from 'app/utils/ServerApiClient';
 import * as blurtjs from '@blurtfoundation/blurtjs';
 import { determineViewMode } from 'app/utils/Links';
 import frontendLogger from 'app/utils/FrontendLogger';
 import ReactGA from 'react-ga';
+import ConsoleExports from './utils/ConsoleExports';
 
 window.addEventListener('error', frontendLogger);
 
@@ -31,7 +31,8 @@ try {
 }
 
 // UA-125809453-3 Tekraze
-ReactGA.initialize('UA-179023138-1', {
+// UA-179023138-1
+ReactGA.initialize('UA-125809453-3', {
     titleCase: false,
     gaOptions: {
         siteSpeedSampleRate: 100,
@@ -90,11 +91,10 @@ function runApp(initial_state) {
         cmd(CMD_LOG_O);
     }
 
-    const config = initial_state.offchain.config;
+    const {config} = initial_state.offchain;
     const alternativeApiEndpoints = config.alternative_api_endpoints;
 
-    const currentApiEndpoint =
-        localStorage.getItem('user_preferred_api_endpoint') === null
+    const currentApiEndpoint = localStorage.getItem('user_preferred_api_endpoint') === null
             ? config.blurtd_connection_client
             : localStorage.getItem('user_preferred_api_endpoint');
     blurtjs.api.setOptions({
@@ -122,7 +122,7 @@ function runApp(initial_state) {
     if (locale) initial_state.user.locale = locale;
     initial_state.user.maybeLoggedIn = !!store.get('autopost2');
     if (initial_state.user.maybeLoggedIn) {
-        const username = new Buffer(store.get('autopost2'), 'hex')
+        const username = Buffer.from(store.get('autopost2'), 'hex')
             .toString()
             .split('\t')[0];
         initial_state.user.current = {
@@ -130,6 +130,7 @@ function runApp(initial_state) {
         };
     }
 
+    // eslint-disable-next-line no-unused-vars
     const location = `${window.location.pathname}${window.location.search}${window.location.hash}`;
 
     try {
@@ -144,6 +145,7 @@ if (!window.Intl) {
     require.ensure(
         ['intl/dist/Intl'],
         (require) => {
+            // eslint-disable-next-line no-multi-assign
             window.IntlPolyfill = window.Intl = require('intl/dist/Intl');
             require('intl/locale-data/jsonp/en-US.js');
             require('intl/locale-data/jsonp/es.js');
