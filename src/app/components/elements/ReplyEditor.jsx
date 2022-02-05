@@ -12,7 +12,7 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable arrow-parens */
-import React from 'react';
+import React, { Component } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import reactForm from 'app/utils/ReactForm';
@@ -33,6 +33,36 @@ import { fromJS, Set } from 'immutable';
 import { Remarkable } from 'remarkable';
 import Dropzone from 'react-dropzone';
 import tt from 'counterpart';
+import 'emoji-mart/css/emoji-mart.css';
+import { Picker, Emoji } from 'emoji-mart';
+
+// import dynamic from "next/dynamic";
+
+// import tinymce from 'tinymce/tinymce';
+// import "tinymce";
+
+// import 'tinymce/icons/default';
+// import "tinymce/themes/silver";
+// import 'tinymce/plugins/emoticons';
+// import 'tinymce/plugins/emoticons/js/emojis';
+// import 'tinymce/plugins/table';
+// import 'tinymce/plugins/help';
+// import 'tinymce/plugins/lists';
+// import 'tinymce/plugins/nonbreaking';
+// import 'tinymce/plugins/quickbars';
+// import 'tinymce/plugins/preview';
+// import 'tinymce/plugins/imagetools';
+// import 'tinymce/plugins/codesample';
+// import 'tinymce/plugins/code';
+// import 'tinymce/plugins/hr';
+// import 'tinymce/plugins/anchor';
+// import 'tinymce/plugins/image';
+// import 'tinymce/plugins/link';
+// import 'tinymce/plugins/wordcount';
+// import 'tinymce/skins/ui/oxide/skin.min.css';
+
+// import { Editor } from '@tinymce/tinymce-react';
+// import Prism from "prismjs";
 
 const MAX_FILE_TO_UPLOAD = 10;
 const imagesToUpload = [];
@@ -41,7 +71,16 @@ const remarkable = new Remarkable({ html: true, breaks: true });
 
 const RTE_DEFAULT = false;
 
-class ReplyEditor extends React.Component {
+class ReplyEditor extends Component {
+    static defaultProps = {
+        // eslint-disable-next-line react/default-props-match-prop-types
+        isStory: false,
+        author: '',
+        parent_author: '',
+        parent_permlink: '',
+        type: 'submit_comment',
+    };
+
     static propTypes = {
         // html component attributes
         formId: PropTypes.string.isRequired, // unique form id for each editor
@@ -63,22 +102,20 @@ class ReplyEditor extends React.Component {
         summary: PropTypes.string,
     };
 
-    static defaultProps = {
-        // eslint-disable-next-line react/default-props-match-prop-types
-        isStory: false,
-        author: '',
-        parent_author: '',
-        parent_permlink: '',
-        type: 'submit_comment',
-    };
-
     constructor(props) {
         super();
         this.state = { progress: {} };
         this.initForm(props);
+        this.postRef = React.createRef();
     }
 
-    componentWillMount() {
+    componentDidMount() {
+        setTimeout(() => {
+            if (this.props.isStory) this.refs.titleRef.focus();
+            else if (this.postRef.current) this.postRef.current.focus();
+            else if (this.refs.rte) this.refs.rte._focus();
+        }, 300);
+
         const { formId } = this.props;
 
         if (process.env.BROWSER) {
@@ -122,19 +159,40 @@ class ReplyEditor extends React.Component {
                     : null,
             });
         }
-    }
 
-    componentDidMount() {
-        setTimeout(() => {
-            if (this.props.isStory) this.refs.titleRef.focus();
-            else if (this.refs.postRef) this.refs.postRef.focus();
-            else if (this.refs.rte) this.refs.rte._focus();
-        }, 300);
+        //        add tinymce
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.10.2/tinymce.min.js';
+        script.type = 'module';
+        script.async = true;
+        document.head.appendChild(script);
+        // if(typeof window !== "undefined") {
+        //     require('tinymce/tinymce');
+        //     require('tinymce/skins/ui/oxide/skin.min.css');
+        //     require('tinymce/icons/default');
+        //     require("tinymce/themes/silver");
+        //     require('tinymce/plugins/emoticons');
+        //     require('tinymce/plugins/emoticons/js/emojis');
+        //     require('tinymce/plugins/table');
+        //     require('tinymce/plugins/help');
+        //     require('tinymce/plugins/lists');
+        //     require('tinymce/plugins/nonbreaking');
+        //     require('tinymce/plugins/quickbars');
+        //     require('tinymce/plugins/preview');
+        //     require('tinymce/plugins/imagetools');
+        //     require('tinymce/plugins/codesample');
+        //     require('tinymce/plugins/code');
+        //     require('tinymce/plugins/hr');
+        //     require('tinymce/plugins/anchor');
+        //     require('tinymce/plugins/image');
+        //     require('tinymce/plugins/link');
+        //     require('tinymce/plugins/wordcount');
+        // }
     }
 
     shouldComponentUpdate = shouldComponentUpdate(this, 'ReplyEditor');
 
-    componentWillUpdate(nextProps, nextState) {
+    UNSAFE_componentWillUpdate(nextProps, nextState) {
         if (process.env.BROWSER) {
             const ts = this.state;
             const ns = nextState;
@@ -165,7 +223,6 @@ class ReplyEditor extends React.Component {
                     summary: summary ? summary.value : undefined,
                 };
 
-                clearTimeout(saveEditorTimeout);
                 saveEditorTimeout = setTimeout(() => {
                     // console.log('save formId', formId, body.value)
                     localStorage.setItem(
@@ -174,9 +231,173 @@ class ReplyEditor extends React.Component {
                     );
                     this.showDraftSaved();
                 }, 500);
+                clearTimeout(saveEditorTimeout);
             }
         }
     }
+
+    // getSnapshotBeforeUpdate(prevProps, prevState) {
+    //     // Are we adding new items to the list?
+    //     // Capture the scroll position so we can adjust scroll later.
+    //     if (prevProps.list.length < this.props.list.length) {
+    //       return (
+    //         this.listRef.scrollHeight - this.listRef.scrollTop
+    //       );
+    //     }
+    //     return null;
+    //   }
+
+    //   componentDidUpdate(prevProps, prevState, snapshot) {
+    //     // If we have a snapshot value, we've just added new items.
+    //     // Adjust scroll so these new items don't push the old ones out of view.
+    //     // (snapshot here is the value returned from getSnapshotBeforeUpdate)
+    //     if (snapshot !== null) {
+    //       this.listRef.scrollTop =
+    //         this.listRef.scrollHeight - snapshot;
+    //     }
+    //   }
+
+    commentEditorRef = React.createRef();
+
+    onCancel = (e) => {
+        if (e) e.preventDefault();
+        const { formId, onCancel, defaultPayoutType } = this.props;
+        const { replyForm, body } = this.state;
+        if (
+            !body.value
+            // eslint-disable-next-line no-alert
+            || confirm(tt('reply_editor.are_you_sure_you_want_to_clear_this_form'))
+        ) {
+            replyForm.resetForm();
+            this.setState({
+                rte_value: stateFromHtml(this.props.richTextEditor),
+            });
+            this.setState({ progress: {} });
+            this.props.setPayoutType(formId, defaultPayoutType);
+            this.props.setBeneficiaries(formId, []);
+            if (onCancel) onCancel(e);
+        }
+    };
+
+    // As rte_editor is updated, keep the (invisible) 'body' field in sync.
+    onChange = (rte_value) => {
+        this.setState({ rte_value });
+        const html = stateToHtml(rte_value);
+        const { body } = this.state;
+        if (body.value !== html) body.props.onChange(html);
+    };
+
+    onChange2 = (rte_value) => {
+        console.log('Rte value', rte_value);
+        this.setState({ rte_value });
+        const html = stateToHtml(rte_value);
+        const { body } = this.state;
+        if (body.value !== html) body.props.onChange(html);
+    };
+
+    onDrop = (acceptedFiles, rejectedFiles) => {
+        if (!acceptedFiles.length) {
+            if (rejectedFiles.length) {
+                this.displayErrorMessage('Please insert only image files.');
+                console.log('onDrop Rejected files: ', rejectedFiles);
+            }
+            return;
+        }
+        if (acceptedFiles.length > MAX_FILE_TO_UPLOAD) {
+            this.displayErrorMessage(
+                `Please upload up to maximum ${MAX_FILE_TO_UPLOAD} images.`
+            );
+            console.log('onDrop too many files to upload');
+            return;
+        }
+
+        for (let fi = 0; fi < acceptedFiles.length; fi += 1) {
+            const acceptedFile = acceptedFiles[fi];
+            const imageToUpload = {
+                file: acceptedFile,
+                temporaryTag: '',
+            };
+            imagesToUpload.push(imageToUpload);
+        }
+
+        this.insertPlaceHolders();
+        this.uploadNextImage();
+    };
+
+    // fileDropzone = React.createRef();
+
+    // onOpenClick = () => {
+    //     console.log('Open click called');
+    //     if(this.fileDropzone.current) {
+    //         console.log('Click works');
+    //         this.fileDropzone.current.open();
+    //     }
+    //     // this.dropzone.open();
+    // };
+
+    onPasteCapture = (e) => {
+        try {
+            if (e.clipboardData) {
+                e.clipboardData.items.forEach(item => {
+                    if (item.kind === 'file' && /^image\//.test(item.type)) {
+                        const blob = item.getAsFile();
+                        imagesToUpload.push({
+                            file: blob,
+                            temporaryTag: '',
+                        });
+                    }
+                });
+                this.insertPlaceHolders();
+                this.uploadNextImage();
+            } else {
+                // http://joelb.me/blog/2011/code-snippet-accessing-clipboard-images-with-javascript/
+                // contenteditable element that catches all pasted data
+                this.setState({ noClipboardData: true });
+            }
+        } catch (error) {
+            console.error('Error analyzing clipboard event', error);
+        }
+    };
+
+    onSummaryChange = (e) => {
+        const { value } = e.target;
+        // TODO block links in title (they do not make good permlinks)
+        const hasMarkdown = /(?:\*[\w\s]*\*|\#[\w\s]*\#|_[\w\s]*_|~[\w\s]*~|\]\s*\(|\]\s*\[)/.test(
+            value
+        );
+        this.setState({
+            summaryWarn: hasMarkdown
+                ? tt('reply_editor.markdown_not_supported')
+                : '',
+        });
+        const { summary } = this.state;
+        summary.props.onChange(e);
+    };
+
+    onTitleChange = (e) => {
+        const { value } = e.target;
+        // TODO block links in title (they do not make good permlinks)
+        const hasMarkdown = /(?:\*[\w\s]*\*|\#[\w\s]*\#|_[\w\s]*_|~[\w\s]*~|\]\s*\(|\]\s*\[)/.test(
+            value
+        );
+        this.setState({
+            titleWarn: hasMarkdown
+                ? tt('reply_editor.markdown_not_supported')
+                : '',
+        });
+        const { title } = this.state;
+        title.props.onChange(e);
+    };
+
+    displayErrorMessage = (message) => {
+        this.setState({
+            progress: { error: message },
+        });
+
+        setTimeout(() => {
+            this.setState({ progress: {} });
+        }, 6000); // clear message
+    };
 
     initForm(props) {
         const { isStory, type, fields } = props;
@@ -216,174 +437,10 @@ class ReplyEditor extends React.Component {
         });
     }
 
-    onTitleChange = (e) => {
-        const { value } = e.target;
-        // TODO block links in title (they do not make good permlinks)
-        const hasMarkdown = /(?:\*[\w\s]*\*|\#[\w\s]*\#|_[\w\s]*_|~[\w\s]*~|\]\s*\(|\]\s*\[)/.test(
-            value
-        );
-        this.setState({
-            titleWarn: hasMarkdown
-                ? tt('reply_editor.markdown_not_supported')
-                : '',
-        });
-        const { title } = this.state;
-        title.props.onChange(e);
-    };
-
-    onSummaryChange = (e) => {
-        const { value } = e.target;
-        // TODO block links in title (they do not make good permlinks)
-        const hasMarkdown = /(?:\*[\w\s]*\*|\#[\w\s]*\#|_[\w\s]*_|~[\w\s]*~|\]\s*\(|\]\s*\[)/.test(
-            value
-        );
-        this.setState({
-            summaryWarn: hasMarkdown
-                ? tt('reply_editor.markdown_not_supported')
-                : '',
-        });
-        const { summary } = this.state;
-        summary.props.onChange(e);
-    };
-
-    onCancel = (e) => {
-        if (e) e.preventDefault();
-        const { formId, onCancel, defaultPayoutType } = this.props;
-        const { replyForm, body } = this.state;
-        if (
-            !body.value
-            // eslint-disable-next-line no-alert
-            || confirm(tt('reply_editor.are_you_sure_you_want_to_clear_this_form'))
-        ) {
-            replyForm.resetForm();
-            this.setState({
-                rte_value: stateFromHtml(this.props.richTextEditor),
-            });
-            this.setState({ progress: {} });
-            this.props.setPayoutType(formId, defaultPayoutType);
-            this.props.setBeneficiaries(formId, []);
-            if (onCancel) onCancel(e);
-        }
-    };
-
-    // As rte_editor is updated, keep the (invisible) 'body' field in sync.
-    onChange = (rte_value) => {
-        this.setState({ rte_value });
-        const html = stateToHtml(rte_value);
-        const { body } = this.state;
-        if (body.value !== html) body.props.onChange(html);
-    };
-
-    toggleRte = (e) => {
-        e.preventDefault();
-        const state = { rte: !this.state.rte };
-        if (state.rte) {
-            const { body } = this.state;
-            state.rte_value = isHtmlTest(body.value)
-                ? stateFromHtml(this.props.richTextEditor, body.value)
-                : stateFromMarkdown(this.props.richTextEditor, body.value);
-        }
-        this.setState(state);
-        localStorage.setItem('replyEditorData-rte', !this.state.rte);
-    };
-
-    showDraftSaved() {
-        try {
-            // this.refs = React.createRef();
-            const { draft } = this.refs;
-            draft.className = 'ReplyEditor__draft';
-            // eslint-disable-next-line no-void
-            void draft.offsetWidth; // reset animation
-            draft.className = 'ReplyEditor__draft ReplyEditor__draft-saved';
-        } catch (err) {
-            // do nothing
-        }
-    }
-
-    showAdvancedSettings = (e) => {
-        e.preventDefault();
-        this.props.setPayoutType(this.props.formId, this.props.payoutType);
-        this.props.showAdvancedSettings(this.props.formId);
-    };
-
-    displayErrorMessage = (message) => {
-        this.setState({
-            progress: { error: message },
-        });
-
-        setTimeout(() => {
-            this.setState({ progress: {} });
-        }, 6000); // clear message
-    };
-
-    onDrop = (acceptedFiles, rejectedFiles) => {
-        if (!acceptedFiles.length) {
-            if (rejectedFiles.length) {
-                this.displayErrorMessage('Please insert only image files.');
-                console.log('onDrop Rejected files: ', rejectedFiles);
-            }
-            return;
-        }
-        if (acceptedFiles.length > MAX_FILE_TO_UPLOAD) {
-            this.displayErrorMessage(
-                `Please upload up to maximum ${MAX_FILE_TO_UPLOAD} images.`
-            );
-            console.log('onDrop too many files to upload');
-            return;
-        }
-
-        for (let fi = 0; fi < acceptedFiles.length; fi += 1) {
-            const acceptedFile = acceptedFiles[fi];
-            const imageToUpload = {
-                file: acceptedFile,
-                temporaryTag: '',
-            };
-            imagesToUpload.push(imageToUpload);
-        }
-
-        this.insertPlaceHolders();
-        this.uploadNextImage();
-    };
-
-    onOpenClick = () => {
-        this.dropzone.open();
-    };
-
-    onPasteCapture = (e) => {
-        try {
-            if (e.clipboardData) {
-                e.clipboardData.items.forEach(item => {
-                    if (item.kind === 'file' && /^image\//.test(item.type)) {
-                        const blob = item.getAsFile();
-                        imagesToUpload.push({
-                            file: blob,
-                            temporaryTag: '',
-                        });
-                    }
-                });
-                this.insertPlaceHolders();
-                this.uploadNextImage();
-            } else {
-                // http://joelb.me/blog/2011/code-snippet-accessing-clipboard-images-with-javascript/
-                // contenteditable element that catches all pasted data
-                this.setState({ noClipboardData: true });
-            }
-        } catch (error) {
-            console.error('Error analyzing clipboard event', error);
-        }
-    };
-
-    uploadNextImage = () => {
-        if (imagesToUpload.length > 0) {
-            const nextImage = imagesToUpload.pop();
-            this.upload(nextImage);
-        }
-    };
-
     insertPlaceHolders = () => {
         let { imagesUploadCount } = this.state;
         const { body } = this.state;
-        const { selectionStart } = this.refs.postRef;
+        const { selectionStart } = this.postRef.current;
         let placeholder = '';
 
         for (let ii = 0; ii < imagesToUpload.length; ii += 1) {
@@ -405,6 +462,38 @@ class ReplyEditor extends React.Component {
         );
     };
 
+    showAdvancedSettings = (e) => {
+        e.preventDefault();
+        this.props.setPayoutType(this.props.formId, this.props.payoutType);
+        this.props.showAdvancedSettings(this.props.formId);
+    };
+
+    showDraftSaved() {
+        try {
+            // this.refs = React.createRef();
+            const { draft } = this.refs;
+            draft.className = 'ReplyEditor__draft';
+            // eslint-disable-next-line no-void
+            void draft.offsetWidth; // reset animation
+            draft.className = 'ReplyEditor__draft ReplyEditor__draft-saved';
+        } catch (err) {
+            // do nothing
+        }
+    }
+
+    toggleRte = (e) => {
+        e.preventDefault();
+        const state = { rte: !this.state.rte };
+        if (state.rte) {
+            const { body } = this.state;
+            state.rte_value = isHtmlTest(body.value)
+                ? stateFromHtml(this.props.richTextEditor, body.value)
+                : stateFromMarkdown(this.props.richTextEditor, body.value);
+        }
+        this.setState(state);
+        localStorage.setItem('replyEditorData-rte', !this.state.rte);
+    };
+
     upload = (image) => {
         const { uploadImage } = this.props;
         this.setState({
@@ -416,12 +505,12 @@ class ReplyEditor extends React.Component {
                 this.setState({ progress: {} });
                 const { url } = progress;
                 const imageMd = `![${image.file.name}](${url})`;
-                const { selectionStart, selectionEnd } = this.refs.postRef;
+                // const { selectionStart, selectionEnd } = this.postRef.current;
                 body.props.onChange(
                     body.value.replace(image.temporaryTag, imageMd)
                 );
                 this.uploadNextImage();
-            } else if (progress.hasOwnProperty('error')) {
+            } else if (Object.prototype.hasOwnProperty.call(progress, 'error')) {
                 this.displayErrorMessage(progress.error);
                 const imageMd = `![${image.file.name}](UPLOAD FAILED)`;
                 // Remove temporary image MD tag
@@ -432,6 +521,33 @@ class ReplyEditor extends React.Component {
                 this.setState({ progress });
             }
         });
+    };
+
+    uploadNextImage = () => {
+        if (imagesToUpload.length > 0) {
+            const nextImage = imagesToUpload.pop();
+            this.upload(nextImage);
+        }
+    };
+
+    addEmoji = (data) => {
+        this.setState({ showEmojiPicker: false });
+
+        const { body } = this.state;
+        const { selectionStart } = this.postRef.current;
+        const nativeEmoji = data.native;
+
+        // Insert the temporary tag where the cursor currently is
+        body.props.onChange(
+            body.value.substring(0, selectionStart) +
+            nativeEmoji +
+            body.value.substring(selectionStart, body.value.length)
+        );
+    };
+
+    toggleEmojiPicker = () => {
+        const { showEmojiPicker } = this.state;
+        this.setState({ showEmojiPicker: !showEmojiPicker });
     };
 
     render() {
@@ -557,6 +673,10 @@ class ReplyEditor extends React.Component {
             : '';
         const RichTextEditor = this.props.richTextEditor;
 
+        // if(typeof window !== "undefined") {
+        //     const TinyMceEditor = require('@tinymce/tinymce-react');
+        // }
+
         // Cover Image Selection Code
         let selectedCoverImage = '';
         if (jsonMetadata && jsonMetadata.image) {
@@ -594,6 +714,15 @@ class ReplyEditor extends React.Component {
 
             rtags = HtmlReady(html, { mutate: false });
         }
+
+        const fileDropzone = React.createRef();
+
+        const onOpenClick = () => {
+            if (fileDropzone.current) {
+                console.log('Click works');
+                fileDropzone.current.open();
+            }
+        };
 
         return (
             <div className="ReplyEditor row">
@@ -684,6 +813,27 @@ class ReplyEditor extends React.Component {
                                 />
                             ) : (
                                 <span>
+                                    {/* {isStory && ( */}
+                                    {/* <span> */}
+                                    <textarea
+                                        {...body.props}
+                                        ref={this.postRef}
+                                        onPasteCapture={this.onPasteCapture}
+                                        className={
+                                            type === 'submit_story'
+                                                ? 'upload-enabled'
+                                                : ''
+                                        }
+                                        disabled={loading}
+                                        rows={isStory ? 10 : 6}
+                                        placeholder={
+                                            isStory
+                                                ? tt('g.write_your_story')
+                                                : tt('g.reply')
+                                        }
+                                        autoComplete="off"
+                                        tabIndex={2}
+                                    />
                                     <Dropzone
                                         onDrop={this.onDrop}
                                         className={
@@ -691,49 +841,42 @@ class ReplyEditor extends React.Component {
                                                 ? 'dropzone'
                                                 : 'none'
                                         }
-                                        disableClick
                                         multiple
+                                        noClick
+                                        noKeyboard
                                         accept="image/*"
-                                        ref={(node) => {
-                                            this.dropzone = node;
-                                        }}
+                                        ref={fileDropzone}
                                     >
-                                        <textarea
-                                            {...body.props}
-                                            ref="postRef"
-                                            onPasteCapture={this.onPasteCapture}
-                                            className={
-                                                type === 'submit_story'
-                                                    ? 'upload-enabled'
-                                                    : ''
-                                            }
-                                            disabled={loading}
-                                            rows={isStory ? 10 : 6}
-                                            placeholder={
-                                                isStory
-                                                    ? tt('g.write_your_story')
-                                                    : tt('g.reply')
-                                            }
-                                            autoComplete="off"
-                                            tabIndex={2}
-                                        />
+                                        {({ getRootProps, getInputProps, isDragActive }) => {
+                                            return (
+                                                <div {...getRootProps({ className: 'dropzone' })} className={classnames('dropzone', { 'dropzone--isactive': isDragActive })}>
+                                                    <p className="drag-and-drop">
+                                                        <input {...getInputProps()} />
+                                                        <a type="button" onClick={this.toggleEmojiPicker}>
+                                                            <Emoji emoji={{ id: 'smiley', skin: 2 }} size={28} />
+                                                        </a>
+                                                        &nbsp; | &nbsp;
+                                                        {tt(
+                                                            'reply_editor.insert_images_by_dragging_dropping'
+                                                        )}
+                                                        {noClipboardData
+                                                            ? ''
+                                                            : tt(
+                                                                'reply_editor.pasting_from_the_clipboard'
+                                                            )}
+                                                        {tt('reply_editor.or_by')}
+                                                        {' '}
+                                                        <a onClick={onOpenClick}>
+                                                            {tt('reply_editor.selecting_them')}
+                                                        </a>
+                                                        .
+                                                    </p>
+                                                </div>
+                                            )
+                                        }}
                                     </Dropzone>
-                                    <p className="drag-and-drop">
-                                        {tt(
-                                            'reply_editor.insert_images_by_dragging_dropping'
-                                        )}
-                                        {noClipboardData
-                                            ? ''
-                                            : tt(
-                                                'reply_editor.pasting_from_the_clipboard'
-                                            )}
-                                        {tt('reply_editor.or_by')}
-                                        {' '}
-                                        <a onClick={this.onOpenClick}>
-                                            {tt('reply_editor.selecting_them')}
-                                        </a>
-                                        .
-                                    </p>
+                                    {/* </span> */}
+                                    {/* )} */}
                                     {progress.message && (
                                         <div className="info">
                                             {progress.message}
@@ -748,6 +891,49 @@ class ReplyEditor extends React.Component {
                                             {progress.error}
                                         </div>
                                     )}
+                                    {/* {!isStory && typeof window !== "undefined" && (
+                                        <Editor
+                                            ref={this.commentEditorRef}
+                                            onBlur={body.onBlur}
+                                            onEditorChange={this.onChange2}
+                                            // onChange={this.onChange2}
+                                            apiKey="vd092f869ur5xpeos999x9befq5jxh5nghgomhiwq83etisx"
+                                            value={this.state.rte_value}
+                                            init={{
+                                                branding: false,
+                                                plugins: "emoticons link code image anchor codesample hr imagetools lists table nonbreaking preview quickbars help wordcount",
+                                                toolbar: "emoticons | formatgroup paragraphgroup insertgroup | code codesample anchor | media nonbreaking preview help wordcount",
+                                                toolbar_location: "bottom",
+                                                imagetools_cors_hosts: ['blurt.live', 'blurtblog.tekraze.com', 'blurtlatam.com', 'blurt.blog'],
+                                                menubar: false,
+                                                toolbar_groups: {
+                                                    formatgroup: {
+                                                        icon: 'format',
+                                                        tooltip: 'Formatting',
+                                                        items: 'bold italic underline strikethrough | forecolor backcolor | superscript subscript | removeformat'
+                                                    },
+                                                    paragraphgroup: {
+                                                        icon: 'paragraph',
+                                                        tooltip: 'Paragraph format',
+                                                        items: 'h1 h2 h3 h4 h5 h6 | bullist numlist | alignleft aligncenter alignright | indent outdent'
+                                                    },
+                                                    insertgroup: {
+                                                        icon: 'plus',
+                                                        tooltip: 'Insert',
+                                                        items: 'link image emoticons hr'
+                                                    }
+                                                },
+                                                media_live_embeds: true,
+                                                media_alt_source: false,
+                                                media_poster: false,
+                                                quickbars_insert_toolbar: 'quicktable image media codesample',
+                                                quickbars_selection_toolbar: 'bold italic underline | h1 h2 h3 | formatselect | bullist numlist | blockquote quicklink',
+                                                contextmenu: 'undo redo | inserttable | cell row column deletetable | help',
+                                                image_advtab: true
+                                            }}
+                                            ref={this.commentEditorRef}
+                                        />
+                                    )} */}
                                 </span>
                             )}
                         </div>
@@ -757,6 +943,15 @@ class ReplyEditor extends React.Component {
                                     && body.error
                                     && body.error !== 'Required'
                                     && body.error}
+                            </div>
+                        </div>
+
+                        <br />
+                        <div className={vframe_section_shrink_class}>
+                            <div className="text-center">
+                                {this.state.showEmojiPicker && (
+                                    <Picker onSelect={this.addEmoji} />
+                                )}
                             </div>
                         </div>
 
@@ -1176,22 +1371,22 @@ export default (formId) => connect(
                 return;
             }
 
-            if(!isEdit) {
-                // const message = `
-
-                //         ---
-                //         <sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/${permlink})</sub>
-                //     `;
-                const message = "<br /> <hr /> <center><sub>Posted from [https://blurtlatam.com](https://blurtlatam.com/" + parent_permlink + "/@" + author + "/" + permlink + ")</sub></center>";
-                if(!isHtml) {
-                    body+= ` ` + message;
-                } else if(isHtml) {
+            // For footer message
+            if (!isEdit) {
+                // const messageMarkdown = "<br /> <hr /> <center><sub>Posted from [https://blurt.live](https://blurtblog.tekraze.com/" + parent_permlink + "/@" + author + "/" + permlink + ")</sub></center>";
+                const messageHTML = '<br /> <hr /> <center><sub>Posted from <a href="https://blurt.live' + parent_permlink + '/@' + author + '/' + permlink + '">https://blurt.live</a></sub></center>';
+               if (!isHtmlTest(body)) {
+                    body += ` ` + messageHTML;
+                } else if (isHtmlTest(body)) {
                     let htmlFromBody = body;
                     if (htmlFromBody) htmlFromBody = stripHtmlWrapper(htmlFromBody);
                     if (htmlFromBody && htmlFromBody.trim() == '') htmlFromBody = null;
-                    if(this.props.RichTextEditor && htmlFromBody != null) {
-                        body = this.props.RichTextEditor.createValueFromString(htmlFromBody, 'html');
-                        body+= message;
+
+                    if(htmlFromBody != null) {
+                        if (this.props && Object.prototype.hasOwnProperty.call(this.props, 'RichTextEditor') && htmlFromBody != null) {
+                            body = this.props.RichTextEditor.createValueFromString(htmlFromBody, 'html');
+                        }
+                        body += messageHTML;
                         isHtml = false;
                     }
                 }
@@ -1256,7 +1451,7 @@ export default (formId) => connect(
             if (rtags.links.size) meta.links = Array.from(rtags.links);
             else delete meta.links;
 
-            meta.app = 'blurtlatam/0.1';
+            meta.app = 'blurt.live/0.1';
             if (isStory) {
                 meta.format = isHtml ? 'html' : 'markdown';
                 if (summary) {

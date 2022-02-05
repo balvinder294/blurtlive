@@ -1,15 +1,6 @@
-# Binary and library file types
-*.a
-*.dylib
-*.so
-*.pyc
-*.pyo
-
-# Xcode project files
-*.xcodeproj/
-*.build/
-Debug/
-Release/
+node_modules
+dist
+__pycache__
 
 # Visual Studio Code files
 .vscode
@@ -17,33 +8,31 @@ Release/
 # Clion
 .idea
 
-# Unix Makefiles
-Makefile
+# # Unix Makefiles
+# Makefile
 
-# Misc files
-# \#*\#
-# *~
-compile_commands.json
-lcov
-doxygen
-.DS_Store
+# # Misc files
+# # \#*\#
+# # *~
+# compile_commands.json
+# lcov
+# doxygen
+# .DS_Store
 
-# Build directories
+#Build directories
 build/
 
 # Condenser things
 .DS_Store
 .coverage
-node_modules
 *.log
 yarn.lock
-dist
 .idea/*
 vendor/*
 tmp/*
 .vagrant
 lib
 
-# m3 local files
-.chicken
-m3info.md
+# # m3 local files
+# .chicken
+# m3info.md

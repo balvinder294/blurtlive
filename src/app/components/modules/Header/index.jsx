@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable react/static-property-placement */
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 import { connect } from 'react-redux';
@@ -25,7 +26,7 @@ import { actions as fetchDataSagaActions } from 'app/redux/FetchDataSaga';
 import { startPolling } from 'app/redux/PollingSaga';
 import { List } from 'immutable';
 
-class Header extends React.Component {
+class Header extends Component {
     static propTypes = {
         current_account_name: PropTypes.string,
         display_name: PropTypes.string,
@@ -47,17 +48,6 @@ class Header extends React.Component {
         };
     }
 
-    componentWillMount() {
-        const {
-            loggedIn,
-            current_account_name,
-            getAccountNotifications,
-        } = this.props;
-        if (loggedIn) {
-            getAccountNotifications(current_account_name);
-        }
-    }
-
     componentDidMount() {
         if (
             !this.props.gptEnabled ||
@@ -69,23 +59,21 @@ class Header extends React.Component {
         }
 
         window.addEventListener('gptadshown', (e) => this.gptAdRendered(e));
-    }
 
-    componentWillUnmount() {
-        if (
-            !this.props.gptEnabled ||
-            !process.env.BROWSER ||
-            !window.googletag ||
-            !window.googletag.pubads
-        ) {
-            return null;
+        const {
+            loggedIn,
+            current_account_name,
+            getAccountNotifications,
+        } = this.props;
+        if (loggedIn) {
+            getAccountNotifications(current_account_name);
         }
     }
 
     // Consider refactor.
     // I think 'last sort order' is something available through react-router-redux history.
     // Therefore no need to store it in the window global like this.
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         if (nextProps.pathname !== this.props.pathname) {
             const route = resolveRoute(nextProps.pathname);
             if (
@@ -102,16 +90,27 @@ class Header extends React.Component {
         }
     }
 
-    headroomOnUnpin() {
-        this.setState({ showAd: false });
+    componentWillUnmount() {
+        if (
+            !this.props.gptEnabled ||
+            !process.env.BROWSER ||
+            !window.googletag ||
+            !window.googletag.pubads
+        ) {
+            return null;
+        }
+    }
+
+    gptAdRendered() {
+        this.setState({ showAd: true, gptAdRendered: true });
     }
 
     headroomOnUnfix() {
         this.setState({ showAd: true });
     }
 
-    gptAdRendered() {
-        this.setState({ showAd: true, gptAdRendered: true });
+    headroomOnUnpin() {
+        this.setState({ showAd: false });
     }
 
     hideAnnouncement() {
@@ -262,12 +261,12 @@ class Header extends React.Component {
 
         const logo_link =
             resolveRoute(pathname).params &&
-            resolveRoute(pathname).params.length > 1 &&
-            this.last_sort_order
+                resolveRoute(pathname).params.length > 1 &&
+                this.last_sort_order
                 ? '/' + this.last_sort_order
                 : current_account_name
-                ? `/@${current_account_name}/feed`
-                : '/';
+                    ? `/@${current_account_name}/feed`
+                    : '/';
 
         //TopRightHeader Stuff
         const defaultNavigate = (e) => {
@@ -338,11 +337,11 @@ class Header extends React.Component {
             { link: settings_link, icon: 'cog', value: tt('g.settings') },
             loggedIn
                 ? {
-                      link: '#',
-                      icon: 'enter',
-                      onClick: logout,
-                      value: tt('g.logout'),
-                  }
+                    link: '#',
+                    icon: 'enter',
+                    onClick: logout,
+                    value: tt('g.logout'),
+                }
                 : { link: '#', onClick: showLogin, value: tt('g.login') },
         ];
         showAd = true;
