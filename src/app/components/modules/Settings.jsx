@@ -120,7 +120,7 @@ class Settings extends Component {
                                         '/settings'
                                     }
                                 >
-                                    blurtwallet.com
+                                    wallet.blurt.live
                                 </a>
                                 .
                             </p>
