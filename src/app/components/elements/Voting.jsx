@@ -144,26 +144,27 @@ class Voting extends Component {
                 };
             }
             const { username, is_comment } = this.props;
+
             localStorage.setItem(
-                'voteWeight'
-                + (up ? '' : 'Down')
-                + '-' + username
-                + (is_comment ? '-comment' : ''),
+                'voteWeight' + (up ? '' : 'Down') + '-'
+                + username + (is_comment ? '-comment' : ''),
                 weight
             );
+
             this.setState({ sliderWeight: w });
         };
 
         this.storeSliderWeight = (up) => () => {
-            const { username, is_comment } = this.props;
             const { sliderWeight } = this.state;
+            const { username, is_comment } = this.props;
             const weight = up
                 ? sliderWeight.up
                 : sliderWeight.down;
             localStorage.setItem(
                 'voteWeight'
                 + (up ? '' : 'Down')
-                + '-' + username
+                + '-'
+                + username
                 + (is_comment ? '-comment' : ''),
                 weight
             );
@@ -226,7 +227,7 @@ class Voting extends Component {
     UNSAFE_componentWillReceiveProps(nextProps) {
         const { username, active_votes } = nextProps;
         this.checkMyVote(username, active_votes);
-        this.getVotingManabar(username);
+        // this.getVotingManabar(username);
     }
 
     componentDidUpdate(prevProps) {
@@ -236,54 +237,62 @@ class Voting extends Component {
     }
 
     getVotingManabar(username) {
-        if (username) {
-            api.getAccounts([username], (err, response) => {
-                const accountUpdated = response[0];
-                const { mana_updated } = this.state;
-
-                const setCurrentState = (account) => {
-                    this.setState({
-                        voting_manabar_updated: account
-                            ? account.voting_manabar
-                            : null,
-                        delegated_vesting_shares_updated: account
-                            ? Number(
-                                account.delegated_vesting_shares.split(' ')[0]
-                            )
-                            : null,
-                        vesting_shares_updated: account
-                            ? Number(account.vesting_shares.split(' ')[0])
-                            : null,
-                        received_vesting_shares_updated: account
-                            ? Number(
-                                account.received_vesting_shares.split(' ')[0]
-                            )
-                            : null,
-                        vesting_withdraw_rate_updated: account
-                            ? Number(
-                                account.vesting_withdraw_rate.split(' ')[0]
-                            )
-                            : null,
-                        mana_updated: account
-                            ? account.voting_manabar.current_mana
-                            : null,
-                        last_update_time_updated: account
-                            ? account.last_update_time
-                            : null,
-                    });
-                };
-
-                if (accountUpdated) {
-                    if (!mana_updated) {
-                        setCurrentState(accountUpdated);
-                    } else if (
-                        mana_updated !==
-                        accountUpdated.voting_manabar.current_mana
-                    ) {
-                        setCurrentState(accountUpdated);
+        const lastUserApiCallStatus = localStorage.getItem('user-api-call-status');
+        if (!lastUserApiCallStatus || lastUserApiCallStatus !== ('pending' || 'error') ) {
+            if (username) {
+                localStorage.setItem('user-api-call-status','pending');
+                api.getAccounts([username], (err, response) => {
+                    if(err) {
+                        localStorage.setItem('user-api-call-status','error');
                     }
-                }
-            });
+                    const accountUpdated = response[0];
+                    localStorage.setItem('user-api-call-status','finished');
+                    const { mana_updated } = this.state;
+
+                    const setCurrentState = (account) => {
+                        this.setState({
+                            voting_manabar_updated: account
+                                ? account.voting_manabar
+                                : null,
+                            delegated_vesting_shares_updated: account
+                                ? Number(
+                                    account.delegated_vesting_shares.split(' ')[0]
+                                )
+                                : null,
+                            vesting_shares_updated: account
+                                ? Number(account.vesting_shares.split(' ')[0])
+                                : null,
+                            received_vesting_shares_updated: account
+                                ? Number(
+                                    account.received_vesting_shares.split(' ')[0]
+                                )
+                                : null,
+                            vesting_withdraw_rate_updated: account
+                                ? Number(
+                                    account.vesting_withdraw_rate.split(' ')[0]
+                                )
+                                : null,
+                            mana_updated: account
+                                ? account.voting_manabar.current_mana
+                                : null,
+                            last_update_time_updated: account
+                                ? account.last_update_time
+                                : null,
+                        });
+                    };
+
+                    if (accountUpdated) {
+                        if (!mana_updated) {
+                            setCurrentState(accountUpdated);
+                        } else if (
+                            mana_updated !==
+                            accountUpdated.voting_manabar.current_mana
+                        ) {
+                            setCurrentState(accountUpdated);
+                        }
+                    }
+                });
+            }
         }
     }
 
