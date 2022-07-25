@@ -19,10 +19,14 @@ export default function ServerHTML({
     return (
         <html lang="en">
             <head>
-                <script
+                {/* <script
                     async
                     src="https://www.googletagmanager.com/gtag/js?id=G-63ZBEY1EVG"
-                />
+                /> */}
+                {/* <!--Begin: Star-Clicks.com HTML Code--> */}
+                <script async src="https://www.star-clicks.com/secure/ads.php?pid=93076934452667729" />
+                {/* // <!-- End: Star-Clicks.com --> */}
+
                 <script content="window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-63ZBEY1EVG');" />
                 <meta charSet="utf-8" />
                 <meta

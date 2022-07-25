@@ -30,7 +30,7 @@
     "auth_token": false
   },
   "price_info_url": "https://api.blurt.world/price_info",
-  "coal_url": "https://coal.blurt.live/",
+  "coal_url": "https://coal.blurtwallet.com/",
   "upload_image": "https://img-upload.blurt.world",
   "blurtd_connection_client": "https://rpc.blurt.live",
   "blurtd_connection_server": "https://rpc.blurt.live",
