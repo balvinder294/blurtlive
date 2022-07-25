@@ -34,7 +34,7 @@ import { Picker, Emoji } from 'emoji-mart';
 import { loadUserTemplates, saveUserTemplates } from 'app/utils/UserTemplates';
 
 const MAX_FILE_TO_UPLOAD = 10;
-const MAX_TAGS=10;
+const MAX_TAGS = 10;
 const imagesToUpload = [];
 
 const remarkable = new Remarkable({ html: true, breaks: true });
@@ -123,6 +123,12 @@ class ReplyEditor extends Component {
                     ? stateFromHtml(this.props.richTextEditor, raw)
                     : null,
             });
+
+            // let beneficiaries = [];
+            // beneficiaries.push({username: 'blurt.one', percent: parseInt(5).toFixed(0)})
+            // beneficiaries = [...new Set(beneficiaries)];
+            // // this.props.setBeneficiaries(formId, []);
+            // this.props.setBeneficiaries(formId, beneficiaries);
         }
     }
 
@@ -1488,42 +1494,22 @@ export default (formId) => connect(
                     if (!__config.comment_options) {
                         __config.comment_options = {};
                     }
-                    const account = state.global.getIn([
-                        'accounts',
-                        username,
-                    ]);
-                    let referrer = '';
-                    if (
-                        account.get('json_metadata') !== undefined
-                        && account.get('json_metadata') !== ''
-                    ) {
-                        const accountCreatedDaysAgo = (new Date().getTime()
-                            - new Date(
-                                `${account.get('created')}Z`
-                            ).getTime())
-                            / 1000
-                            / 60
-                            / 60
-                            / 24;
-                        if (accountCreatedDaysAgo < 30) {
-                            referrer = JSON.parse(
-                                account.get('json_metadata')
-                            ).referral;
-                        }
-                    }
-                    if (referrer) {
-                        __config.comment_options.extensions.push([
-                            0,
-                            {
-                                beneficiaries: [
-                                    {
-                                        account: referrer,
-                                        weight: 300,
-                                    },
-                                ],
-                            },
-                        ]);
-                    }
+                    // const account = state.global.getIn([
+                    //     'accounts',
+                    //     username,
+                    // ]);
+                    // const referrer = username && username === 'blurt.one' ? 'tekraze' : 'blurt.one';
+                    // __config.comment_options.extensions.push([
+                    //     0,
+                    //     {
+                    //         beneficiaries: [
+                    //             {
+                    //                 account: referrer,
+                    //                 weight: 500,
+                    //             },
+                    //         ],
+                    //     },
+                    // ]);
                 }
             }
 

@@ -97,8 +97,8 @@ function runApp(initial_state) {
     const alternativeApiEndpoints = config.alternative_api_endpoints;
 
     const currentApiEndpoint = localStorage.getItem('user_preferred_api_endpoint') === null
-        ? config.blurtd_connection_client
-        : localStorage.getItem('user_preferred_api_endpoint');
+            ? config.blurtd_connection_client
+            : localStorage.getItem('user_preferred_api_endpoint');
     blurtjs.api.setOptions({
         url: currentApiEndpoint,
         retry: true,
@@ -133,8 +133,9 @@ function runApp(initial_state) {
     }
 
     // eslint-disable-next-line no-unused-vars
-    const location = `${window.location.pathname}${window.location.search}${window.location.hash
-        }`;
+    const location = `${window.location.pathname}${window.location.search}${
+        window.location.hash
+    }`;
 
     try {
         clientRender(initial_state);
